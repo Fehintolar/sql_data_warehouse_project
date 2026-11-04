@@ -1,0 +1,224 @@
+## Data Warehouse Project — Bronze Layer (PostgreSQL)
+
+### Project Overview
+
+This project is a hands-on implementation of a modern data warehouse using PostgreSQL, inspired by the Data Warehouse guided project by Data with Baraa. The objective is to build a data warehouse that consolidates data from multiple source systems, including CRM and ERP data, into a structured environment for analytical processing.
+
+The project follows the Medallion Architecture, which consists of three layers:
+
+- **Bronze Layer:** Stores raw data from source systems.
+- **Silver Layer:** Cleans, standardizes, and transforms the raw data.
+- **Gold Layer:** Organizes transformed data into business-ready models for reporting and analytics.
+
+This repository documents my implementation of the project using PostgreSQL instead of Microsoft SQL Server.
+
+## Technologies Used
+
+- PostgreSQL — Database management system
+- SQL — Database creation, schema design, table creation, and data loading
+- pgAdmin / psql — Database management and query execution
+- Git & GitHub — Version control and project documentation
+
+## Project Architecture
+
+The Bronze Layer serves as the initial landing area for data entering the warehouse. The source files are loaded into PostgreSQL tables while preserving the original structure and content of the data as much as possible.
+
+```text
+Source CSV Files
+       |
+       v
+  PostgreSQL
+       |
+       v
+  Bronze Schema
+       |
+       v
+  Raw Data Tables
+       |
+       v
+  Silver Layer (Next)
+       |
+       v
+   Gold Layer (Next)
+```
+
+## Database Setup
+
+I created the PostgreSQL database and established separate schemas to organize the data warehouse layers. The database was structured to support the Bronze, Silver, and Gold layers.
+
+The Bronze schema contains the raw data tables loaded from the source files.
+
+### Database Structure
+
+| Component     | Description                               |
+| ------------- | ----------------------------------------- |
+| Database      | Central data warehouse database           |
+| Bronze Schema | Stores raw source data                    |
+| Silver Schema | Reserved for cleaned and transformed data |
+| Gold Schema   | Reserved for analytical models            |
+
+The schemas provide logical separation between the different stages of data processing.
+
+## Bronze Layer Implementation
+
+### 1. Creating the Bronze Schema
+
+The Bronze schema was created to serve as the landing area for raw data.
+
+```sql
+CREATE SCHEMA IF NOT EXISTS bronze;
+```
+
+### 2. Creating the Bronze Tables
+
+I created the Bronze Layer tables in PostgreSQL based on the structure of the source CSV files.
+
+The tables were designed to reflect the source data, with minimal transformation at the point of ingestion.
+
+This approach helps preserve the raw data and allows subsequent processing layers to handle data cleaning and standardization.
+
+Example:
+
+```sql
+CREATE TABLE bronze.crm_cust_info (
+    cst_id INTEGER,
+    cst_key VARCHAR(50),
+    cst_firstname VARCHAR(50),
+    cst_lastname VARCHAR(50),
+    cst_marital_status VARCHAR(50),
+    cst_gndr VARCHAR(50),
+    cst_create_date DATE
+);
+```
+
+### 3. Bulk Loading Data into PostgreSQL
+
+The original guided project uses Microsoft SQL Server and its bulk-loading functionality to import data from CSV files. For my implementation, after creating the database, schemas, and tables, I imported the source data into each table individually.
+
+The process involved:
+
++ Selecting the target Bronze Layer table.
+
++ Importing the corresponding CSV file.
+
++ Monitoring the import process.
+
++ Confirming that the data was successfully loaded.
+
++ Observing the time taken for each import.
+
+PostgreSQL's import interface provided a success notification after each upload. The notification also displayed the time taken to complete the import.
+
+PostgreSQL provides a convenient way to load multiple rows from a CSV file in a single operation.
+
+#### Using import/export in psql
+
+The import/export option reads a file from the client machine and transfers its contents into a PostgreSQL table.
+
+This was useful because my CSV files were stored locally on my computer.
+
+All I did was set
+    FORMAT CSV,
+    HEADER TRUE,
+    DELIMITER ','
+
+The `HEADER TRUE` option tells PostgreSQL to skip the first row of the CSV file, which contains the column headers.
+
+The `DELIMITER ','` option specifies that the fields are separated by commas.
+
+The `FORMAT CSV` option identifies the file format.
+
+### 4. Loading Multiple Source Files
+
+I repeated the bulk-loading process for each source CSV file and its corresponding Bronze Layer table.
+
+Each file was mapped to its appropriate table based on the source system and data structure.
+
+The general process was:
+
+1. Identify the source CSV file.
+2. Confirm the corresponding Bronze Layer table.
+3. Verify that the column order and data types are compatible.
+4. Execute the PostgreSQL bulk-loading command.
+5. Confirm that the data was successfully inserted.
+
+This approach allowed me to load the raw data efficiently without manually inserting individual records.
+
+## Data Validation
+
+After loading the source data, I performed basic validation to confirm that the data was successfully ingested.
+
+The validation process included:
+
+- Checking the number of records loaded into each Bronze table.
+- Confirming that the tables contained the expected columns.
+- Inspecting sample records to verify that the data was loaded correctly.
+- Checking for unexpected errors during ingestion.
+
+Example:
+
+```sql
+SELECT COUNT(*)
+FROM bronze.crm_cust_info;
+```
+
+This query returns the total number of records loaded into the table.
+
+I also inspected sample records:
+
+```sql
+SELECT *
+FROM bronze.crm_cust_info
+LIMIT 10;
+```
+
+## PostgreSQL vs. SQL Server
+
+Although the guided project uses SQL Server, I adapted the ingestion process to PostgreSQL.
+
+| Task              | SQL Server        | PostgreSQL        |
+| ----------------- | ----------------- | ----------------- |
+| Database creation | `CREATE DATABASE` | `CREATE DATABASE` |
+| Schema creation   | `CREATE SCHEMA`   | `CREATE SCHEMA`   |
+| Table creation    | `CREATE TABLE`    | `CREATE TABLE`    |
+| Bulk loading      | `BULK INSERT`     | Import/Export     |
+| Limiting records  | `TOP`             | `LIMIT`           |
+| Database client   | SSMS              | pgAdmin / psql    |
+
+The underlying data warehouse concepts remain the same. The main difference is the database-specific syntax and the way the source files are accessed during ingestion.
+
+## Challenges and Learning Outcomes
+
+One of the main challenges was adapting the data ingestion process from SQL Server to PostgreSQL.
+
+The guided project uses SQL Server's bulk-loading functionality, while PostgreSQL provides its own mechanisms for importing data.
+
+Through this implementation, I gained practical experience in:
+
+- Setting up a PostgreSQL data warehouse environment.
+- Organizing data warehouse layers using schemas.
+- Creating raw data tables based on source structures.
+- Bulk-loading CSV files into PostgreSQL.
+- Understanding the differences between SQL Server and PostgreSQL.
+- Validating data after ingestion.
+- Using Git and GitHub to document and version-control a data engineering project.
+
+## Current Progress
+
+- [x] Git repository created
+- [x] PostgreSQL database created
+- [x] Data warehouse schemas created
+- [x] Bronze Layer tables created
+- [x] Source CSV files bulk-loaded
+- [x] Basic data validation completed
+- [ ] Silver Layer implementation
+- [ ] Gold Layer implementation
+- [ ] Analytical queries and reporting
+
+## Acknowledgements
+
+This project is inspired by the Data Warehouse guided project by Data with Baraa.
+
+The project follows the concepts and architecture introduced in the original tutorial, while adapting the implementation to PostgreSQL.
+
+The purpose of this adaptation is to strengthen my understanding of data warehousing, SQL, data ingestion, and database-specific implementation.
